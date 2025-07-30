@@ -1,0 +1,106 @@
+body {
+  font-family: sans-serif;
+  margin: 20px;
+  background-color: #FAF3E0;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  color: white;
+  background-color: #0077B6;
+  padding: 10px;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-bottom: 20px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.tabella {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #000;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.riga:nth-child(odd) {
+  display: flex;
+  border-bottom: 1px solid #ccc;
+  background-color: #E3F6FF;
+}
+
+.riga:nth-child(even) {
+  display: flex;
+  border-bottom: 1px solid #ccc;
+  background-color: #FFFAE6;
+}
+
+.cella {
+  padding: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.numero {
+  width: 20%;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.squadra {
+  width: 55%;
+}
+
+.azioni {
+  width: 25%;
+  justify-content: center;
+  gap: 20px;
+}
+
+.azioni button {
+  font-size: 1.2em;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.aggiungi {
+  margin-top: 30px;
+  text-align: center;
+}
+
+input[type="text"] {
+  width: 80%;
+  padding: 8px;
+  margin: 10px 0;
+  border: 2px solid #007bff;
+  border-radius: 4px;
+}
+
+.btn-aggiungi {
+  padding: 10px 20px;
+  font-weight: bold;
+  background-color: #2EC4B6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-aggiungi:hover {
+  background-color: #FFD166;
+}
+
+.errore {
+  color: red;
+  margin-top: 5px;
+  font-weight: bold;
+  font-size: 0.9em;
+  height: 1em;
+}
