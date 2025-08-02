@@ -1,7 +1,7 @@
 from flask import Flask, request, redirect, render_template, jsonify
 import json
 import os
-from datetime import datetime
+from datetime import datetime, date
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -17,16 +17,15 @@ with app.app_context():
 class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     giocatori = db.Column(db.Text, nullable=False)
-    data = db.Column(db.Date, default=datetime.now())
+    data = db.Column(db.Date, default=date.today)
 
-def dmy():
-    return datetime.now().strftime("%Y-%m-%d")
+def oggi():
+    return date.today()
 
 def carica_dati():
-    oggi = dmy()
-    teams = Team.query.filter(Team.data == oggi).all()
+    teams = Team.query.filter(Team.data == oggi()).all()
     return {
-        "data" : oggi,
+        "data" : oggi(),
         "prenotazioni" : [json.loads(t.giocatori) for t in teams]
     }
 
@@ -38,7 +37,7 @@ def index():
         nomi = request.form["nomi"].split(",")
         squadra = [nome.strip() for nome in nomi if nome.strip()]
         if squadra:
-            team = Team(giocatori=json.dumps(squadra), data = dmy())
+            team = Team(giocatori=json.dumps(squadra), data = oggi())
             db.session.add(team)
             db.session.commit()
         return redirect("/")
@@ -48,7 +47,7 @@ def index():
 @app.route("/rimuovi", methods=["POST"])
 def rimuovi():
     index = request.json.get("index")
-    teams = Team.query.filter(Team.data == dmy()).all()
+    teams = Team.query.filter(Team.data == oggi()).all()
     if 0 <= index < len(teams):
         db.session.delete(teams[index])
         db.session.commit()
@@ -57,10 +56,10 @@ def rimuovi():
 @app.route("/duplica", methods=["POST"])
 def duplica():
     index = request.json.get("index")
-    teams = Team.query.filter(Team.data == dmy()).all()
+    teams = Team.query.filter(Team.data == oggi()).all()
     if 0 <= index < len(teams):
         squadra = json.loads(teams[index].giocatori)
-        nuova = Team(giocatori=json.dumps(squadra), data=dmy())
+        nuova = Team(giocatori=json.dumps(squadra), data=oggi())
         db.session.add(nuova)
         db.session.commit()
     return "", 204
@@ -74,7 +73,7 @@ def dati():
 def aggiungi():
     squadra = request.json.get("squadra",[])
     if 3 <= len(squadra) <= 5:
-        nuova = Team(giocatori=json.dumps(squadra), data=dmy())
+        nuova = Team(giocatori=json.dumps(squadra), data=oggi())
         db.session.add(nuova)
         db.session.commit()
     return "", 204
