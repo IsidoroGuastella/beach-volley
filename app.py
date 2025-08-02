@@ -10,6 +10,10 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+with app.app_context():
+    db.create_all()
+
+
 class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     giocatori = db.Column(db.Text, nullable=False)
