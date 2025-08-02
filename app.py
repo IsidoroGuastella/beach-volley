@@ -1,7 +1,7 @@
 from flask import Flask, request, redirect, render_template, jsonify
 import json
 import os
-from datetime import datetime, date
+from datetime import date
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -25,8 +25,8 @@ def oggi():
 def carica_dati():
     teams = Team.query.filter(Team.data == oggi()).all()
     return {
-        "data" : oggi(),
-        "prenotazioni" : [json.loads(t.giocatori) for t in teams]
+        "data": oggi().strftime("%Y-%m-%d"),
+        "prenotazioni": [json.loads(t.giocatori) for t in teams]
     }
 
 @app.route("/", methods=["GET", "POST"])
@@ -37,12 +37,21 @@ def index():
         nomi = request.form["nomi"].split(",")
         squadra = [nome.strip() for nome in nomi if nome.strip()]
         if squadra:
-            team = Team(giocatori=json.dumps(squadra), data = oggi())
+            team = Team(giocatori=json.dumps(squadra), data=oggi())
             db.session.add(team)
             db.session.commit()
         return redirect("/")
 
     return render_template("index.html", prenotazioni=dati["prenotazioni"])
+
+@app.route("/aggiungi", methods=["POST"])
+def aggiungi():
+    squadra = request.json.get("squadra", [])
+    if 3 <= len(squadra) <= 5:
+        nuova = Team(giocatori=json.dumps(squadra), data=oggi())
+        db.session.add(nuova)
+        db.session.commit()
+    return "", 204
 
 @app.route("/rimuovi", methods=["POST"])
 def rimuovi():
@@ -64,19 +73,9 @@ def duplica():
         db.session.commit()
     return "", 204
 
-
 @app.route("/dati")
 def dati():
     return jsonify(carica_dati())
-
-@app.route("/aggiungi", methods=["POST"])
-def aggiungi():
-    squadra = request.json.get("squadra",[])
-    if 3 <= len(squadra) <= 5:
-        nuova = Team(giocatori=json.dumps(squadra), data=oggi())
-        db.session.add(nuova)
-        db.session.commit()
-    return "", 204
 
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=3000)
