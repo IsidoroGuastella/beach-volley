@@ -14,9 +14,9 @@ class Team(db.Model):
     giocatori = db.Column(db.Text, nullable=False)
     data = db.Column(db.Date, default=date.today)
 
-with app.app_context():
-    db.create_all()
-    print("✅ Tabelle create (Render)")
+#with app.app_context():
+    #db.create_all()
+    #print("✅ Tabelle create (Render)")
 
 def oggi():
     return date.today()
