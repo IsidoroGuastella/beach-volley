@@ -9,11 +9,14 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-
 class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     giocatori = db.Column(db.Text, nullable=False)
     data = db.Column(db.Date, default=date.today)
+
+with app.app_context():
+    db.create_all()
+    print("✅ Tabelle create (Render)")
 
 def oggi():
     return date.today()
