@@ -2,30 +2,29 @@ from flask import Flask, request, redirect, render_template, jsonify
 import json
 import os
 from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-FILE = "prenotazioni.json"
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-def oggi():
+db = SQLAlchemy(app)
+
+class Team(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    giocatori = db.Column(db.Text, nullable=False)
+    data = db.Column(db.Date, default=datetime.now())
+
+def dmy():
     return datetime.now().strftime("%Y-%m-%d")
 
 def carica_dati():
-    if not os.path.exists(FILE) or os.path.getsize(FILE) == 0:
-        return {"data": oggi(), "prenotazioni": []}
-
-    with open(FILE, "r") as f:
-        try:
-            dati = json.load(f)
-            if dati.get("data") != oggi():
-                return {"data": oggi(), "prenotazioni": []}
-            return dati
-        except json.JSONDecodeError:
-            return {"data": oggi(), "prenotazioni": []}
-
-def salva_dati(dati):
-    dati["data"] = oggi()
-    with open(FILE, "w") as f:
-        json.dump(dati, f, indent=4)
+    oggi = dmy()
+    teams = Team.query.filter(Team.data == oggi).all()
+    return {
+        "data" : oggi,
+        "prenotazioni" : [json.loads(t.giocatori) for t in teams]
+    }
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -35,8 +34,9 @@ def index():
         nomi = request.form["nomi"].split(",")
         squadra = [nome.strip() for nome in nomi if nome.strip()]
         if squadra:
-            dati["prenotazioni"].append(squadra)
-            salva_dati(dati)
+            team = Team(giocatori=json.dumps(squadra), data = dmy())
+            db.session.add(team)
+            db.session.commit()
         return redirect("/")
 
     return render_template("index.html", prenotazioni=dati["prenotazioni"])
@@ -44,20 +44,21 @@ def index():
 @app.route("/rimuovi", methods=["POST"])
 def rimuovi():
     index = request.json.get("index")
-    dati = carica_dati()
-    if 0 <= index < len(dati["prenotazioni"]):
-        dati["prenotazioni"].pop(index)
-        salva_dati(dati)
+    teams = Team.query.filter(Team.data == dmy()).all()
+    if 0 <= index < len(teams):
+        db.session.delete(teams[index])
+        db.session.commit()
     return "", 204
 
 @app.route("/duplica", methods=["POST"])
 def duplica():
     index = request.json.get("index")
-    dati = carica_dati()
-    if 0 <= index < len(dati["prenotazioni"]):
-        squadra = dati["prenotazioni"][index]
-        dati["prenotazioni"].append(squadra.copy())
-        salva_dati(dati)
+    teams = Team.query.filter(Team.data == dmy()).all()
+    if 0 <= index < len(teams):
+        squadra = json.loads(teams[index].giocatori)
+        nuova = Team(giocatori=json.dumps(squadra), data=dmy())
+        db.session.add(nuova)
+        db.session.commit()
     return "", 204
 
 
@@ -67,11 +68,11 @@ def dati():
 
 @app.route("/aggiungi", methods=["POST"])
 def aggiungi():
-    dati = carica_dati()
-    squadra = request.json.get("squadra", [])
+    squadra = request.json.get("squadra",[])
     if 3 <= len(squadra) <= 5:
-        dati["prenotazioni"].append(squadra)
-        salva_dati(dati)
+        nuova = Team(giocatori=json.dumps(squadra), data=dmy())
+        db.session.add(nuova)
+        db.session.commit()
     return "", 204
 
 if __name__ == "__main__":
