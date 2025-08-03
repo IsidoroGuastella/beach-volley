@@ -7,3 +7,9 @@ services:
     envVars:
       - key: FLASK_ENV
         value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: beach-volley-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true

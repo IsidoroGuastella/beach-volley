@@ -12,8 +12,13 @@
     </head>
     <body>
         <header>
-            <div id="data"></div>
-            <div id="ora"></div>
+            <div>
+                <div id="data"></div>
+                <div id="ora"></div>
+            </div>
+            <div>
+                <a href="{{ url_for('logout') }}" class="logout">Logout</a>
+            </div>
         </header>
         <h1>Prenotazioni - <span id="conteggio">0</span> partite</h1>
         <section class="tabella" id="tabella-squadre"></section>

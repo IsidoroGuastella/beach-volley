@@ -12,12 +12,7 @@ function aggiornaDataEOra() {
 setInterval(aggiornaDataEOra, 1000);
 aggiornaDataEOra();
 
-// Carica le squadre da localStorage oppure parte da vuoto
-const squadre = JSON.parse(localStorage.getItem("squadre") || "[]");
-
-function salva() {
-  localStorage.setItem("squadre", JSON.stringify(squadre));
-}
+const squadre = [];
 
 // Funzione per convertire in numeri romani
 function numeroRomano(n) {

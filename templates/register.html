@@ -2,17 +2,35 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Registrati</title>
+    <title>Sign up</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-login.css') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon-192.png') }}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Beach Volley">
 </head>
 <body>
-    <h1>Registrazione</h1>
-    <form method="POST">
-        <label for="username">Nome utente:</label><br>
-        <input type="text" name="username" required><br><br>
-        <label for="password">Password:</label><br>
-        <input type="password" name="password" required><br><br>
-        <button type="submit">Registrati</button>
-    </form>
-    <p>Hai già un account? <a href="/login">Accedi</a></p>
+    <div class="colonna laterale"></div>
+    <div class="colonna centrale">
+        <div class="contenitore-box">
+            <div class="titolo-pagina">Registrazione</div>
+            <div class="box">
+                <form method="POST">
+                    <label for="username">Nome utente</label>
+                    <input type="text" name="username" placeholder="Es. Mario Rossi" required>
+
+                    <label for="email">Email</label>
+                    <input type="email" name="email" required>
+
+                    <label for="password">Password</label>
+                    <input type="password" name="password" required>
+
+                    <button type="submit">SIGN UP</button>
+                </form>
+                <p>Hai già un account? <a href="/login">Accedi</a></p>
+            </div>
+        </div>
+    </div>
+    <div class="colonna laterale"></div>
 </body>
 </html>

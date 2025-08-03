@@ -51,6 +51,7 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    errore = None
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
@@ -58,9 +59,9 @@ def login():
         if user and check_password_hash(user.password_hash, password):
             session["user_id"] = user.id
             return redirect("/")
-        return "Credenziali errate", 401
+        errore = "Credenziali errate. Riprova."
 
-    return render_template("login.html")
+    return render_template("login.html", errore=errore)
 
 @app.route("/logout")
 def logout():

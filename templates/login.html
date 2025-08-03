@@ -1,18 +1,57 @@
 <!DOCTYPE html>
 <html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-</head>
-<body>
-    <h1>Accedi</h1>
-    <form method="POST">
-        <label for="username">Nome utente:</label><br>
-        <input type="text" name="username" required><br><br>
-        <label for="password">Password:</label><br>
-        <input type="password" name="password" required><br><br>
-        <button type="submit">Accedi</button>
-    </form>
-    <p>Non hai un account? <a href="/register">Registrati</a></p>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Login</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='stylepagine.css') }}">
+        <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+        <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon-192.png') }}">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-title" content="Beach Volley">
+    </head>
+    <body>
+        <div class="colonna laterale"></div>
+        <div class="colonna centrale">
+            <div class="contenitore-box">
+                <div class="titolo-pagina">Accedi</div>
+                <div class="box">
+                    <form method="POST">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="Es. mario@esempio.com" required>
+                        <label for="password">Password</label>
+                        <div class="campo-password">
+                            <input type="password" id="password" name="password" required>
+                            <img src="{{ url_for('static', filename='img1.png') }}"  
+                            id="togglePassword" class="toggle-password" alt="Mostra password"
+                            data-img-on="{{ url_for('static', filename='img0.png') }}" 
+                            data-img-off="{{ url_for('static', filename='img1.png') }}">
+                        </div>
+                        <button type="submit" class="accesso">LOG IN</button>
+                    </form>
+                    {% if errore %}
+                        <p class="errore">{{ errore }}</p>
+                    {% endif %}
+                    <p>Non hai un account? <a href="/register">Registrati</a><br><br>
+                    <a>Hai dimenticato la password?</a></p>
+                </div>
+            </div>
+        </div>
+        <div class="colonna laterale"></div>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const passwordField = document.getElementById("password");
+                const toggleIcon = document.getElementById("togglePassword");
+
+                toggleIcon.addEventListener("click", () => {
+                const imgOn = toggleIcon.getAttribute("data-img-on");
+                const imgOff = toggleIcon.getAttribute("data-img-off");
+
+                const isHidden = passwordField.type === "password";
+                passwordField.type = isHidden ? "text" : "password";
+                toggleIcon.src = isHidden ? imgOn : imgOff;
+                });
+            });
+        </script>
+    </body>
 </html>

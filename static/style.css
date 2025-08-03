@@ -104,3 +104,27 @@ input[type="text"] {
   font-size: 0.9em;
   height: 1em;
 }
+
+.logout {
+    float: right;
+    margin: 10px;
+    text-decoration: none;
+    color: #fff;
+    background: #c0392b;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+
+.logout:hover {
+    background: #e74c3c;
+}
+
+@media (max-width: 600px) {
+  .numero, .squadra, .azioni {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .riga {
+    flex-direction: column;
+  }
+}
