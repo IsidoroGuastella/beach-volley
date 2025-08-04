@@ -2,6 +2,9 @@ from flask import Flask, render_template, request, redirect, session, url_for, j
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date
+import smtplib
+from email.mime.text import MIMEText
+from token_utils import genera_token, verifica_token
 import os
 import json
 
@@ -18,6 +21,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(512), nullable=False)
+    is_verified = db.Column(db.Boolean, default=False)
     teams = db.relationship("Team", backref="owner", lazy=True)
 
 class Team(db.Model):
@@ -38,14 +42,22 @@ def register():
         email = request.form["email"]
         password = request.form["password"]
 
-        if User.query.filter((User.email == email) | (User.username == username)).first():
+        if User.query.filter(User.email == email).first():
             return "Utente già esistente", 400
 
         hashed_pw = generate_password_hash(password)
         nuovo = User(username=username, email=email, password_hash=hashed_pw)
         db.session.add(nuovo)
         db.session.commit()
-        return redirect("/login")
+
+        # Genera il token
+        token = genera_token(email)
+        link = url_for("verifica_email", token=token, _external=True)
+
+        # Invia email
+        invia_email_verifica(email, link)
+
+        return "Registrazione riuscita. Controlla la tua email per confermare l’account."
 
     return render_template("register.html")
 
@@ -57,8 +69,12 @@ def login():
         password = request.form["password"]
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password_hash, password):
-            session["user_id"] = user.id
-            return redirect("/")
+            if not user.is_verified:
+                errore = "Devi verificare l'email prima di accedere."
+            else:
+                session["user_id"] = user.id
+                return redirect("/")
+
         errore = "Credenziali errate. Riprova."
 
     return render_template("login.html", errore=errore)
@@ -131,6 +147,62 @@ def aggiungi():
         db.session.add(nuova)
         db.session.commit()
     return "", 204
+
+@app.route("/verifica/<token>")
+def verifica_email(token):
+    email = verifica_token(token)
+    if not email:
+        return "Token non valido o scaduto.", 400
+
+    utente = User.query.filter_by(email=email).first()
+    if not utente:
+        return "Utente non trovato.", 404
+
+    if utente.is_verified:
+        return "Email già verificata."
+
+    utente.is_verified = True
+    db.session.commit()
+    return "Email verificata con successo! Ora puoi accedere."
+
+# Configurazione Flask-Mail
+app.config["MAIL_PORT"] = 587
+app.config["MAIL_USE_TLS"] = True
+app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
+app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
+app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_USERNAME")
+
+
+def invia_email_verifica(destinatario, link_verifica):
+    mittente = os.environ.get("MAIL_USERNAME")
+    password = os.environ.get("MAIL_PASSWORD")
+    server_smtp = "smtp.gmail.com"
+    porta = int(os.environ.get("MAIL_PORT", 587))
+
+    corpo = f"""\
+Ciao!
+
+Per completare la registrazione, clicca sul seguente link per verificare il tuo indirizzo email:
+
+{link_verifica}
+
+Il link è valido per 1 ora.
+
+Se non hai richiesto questa registrazione, puoi ignorare questa email.
+"""
+
+    msg = MIMEText(corpo)
+    msg["Subject"] = "Verifica il tuo indirizzo email"
+    msg["From"] = mittente
+    msg["To"] = destinatario
+
+    try:
+        with smtplib.SMTP(server_smtp, porta) as server:
+            server.starttls()
+            server.login(mittente, password)
+            server.send_message(msg)
+    except Exception as e:
+        print("Errore durante l’invio dell’email:", e)
 
 # START
 if __name__ == "__main__":
