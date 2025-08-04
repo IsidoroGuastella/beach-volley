@@ -204,6 +204,71 @@ Se non hai richiesto questa registrazione, puoi ignorare questa email.
     except Exception as e:
         print("Errore durante l’invio dell’email:", e)
 
+@app.route("/reset-password", methods=["GET", "POST"])
+def reset_password():
+    if request.method == "POST":
+        email = request.form["email"]
+        user = User.query.filter_by(email=email).first()
+        if user:
+            token = genera_token(email)
+            link = url_for("nuova_password", token=token, _external=True)
+            invia_email_reset(email, link)
+            return "Ti abbiamo inviato un'email con il link per reimpostare la password."
+        else:
+            return "Email non trovata", 404
+
+    return render_template("reset_password.html")
+
+def invia_email_reset(destinatario, link_reset):
+    mittente = os.environ.get("MAIL_USERNAME")
+    password = os.environ.get("MAIL_PASSWORD")
+    server_smtp = os.environ.get("EMAIL_SMTP", "smtp.gmail.com")
+    porta = int(os.environ.get("MAIL_PORT", 587))
+
+    corpo = f"""\
+Ciao!
+
+Hai richiesto di reimpostare la tua password. Clicca sul link qui sotto per crearne una nuova:
+
+{link_reset}
+
+Questo link scade tra 1 ora. Se non hai richiesto tu questa operazione, puoi ignorare questa email.
+"""
+
+    msg = MIMEText(corpo)
+    msg["Subject"] = "Recupero password - Beach Volley"
+    msg["From"] = mittente
+    msg["To"] = destinatario
+
+    try:
+        with smtplib.SMTP(server_smtp, porta) as server:
+            server.starttls()
+            server.login(mittente, password)
+            server.send_message(msg)
+    except Exception as e:
+        print("Errore durante l’invio dell’email di reset:", e)
+
+@app.route("/nuova-password/<token>", methods=["GET", "POST"])
+def nuova_password(token):
+    email = verifica_token(token)
+    if not email:
+        return "Il link non è valido o è scaduto.", 400
+
+    utente = User.query.filter_by(email=email).first()
+    if not utente:
+        return "Utente non trovato.", 404
+
+    if request.method == "POST":
+        nuova_pw = request.form["password"]
+        if len(nuova_pw) < 6:
+            return "La password deve contenere almeno 6 caratteri.", 400
+
+        utente.password_hash = generate_password_hash(nuova_pw)
+        db.session.commit()
+        return "Password aggiornata con successo! Ora puoi accedere."
+
+    return render_template("nuova_password.html", token=token)
+
 # START
 if __name__ == "__main__":
     with app.app_context():
