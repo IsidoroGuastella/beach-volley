@@ -270,6 +270,12 @@ def nuova_password(token):
 
     return render_template("nuova_password.html", token=token)
 
+@app.before_request # Rotta per redirect nel caso qualcuno salvi l'indirizzo sbagliato
+def blocca_accesso_a_static_root():
+    if request.path == "/static":
+        return redirect(url_for("login"))
+
+
 # START
 if __name__ == "__main__":
     with app.app_context():
