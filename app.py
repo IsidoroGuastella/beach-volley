@@ -204,7 +204,7 @@ Se non hai richiesto questa registrazione, puoi ignorare questa email.
     except Exception as e:
         print("Errore durante l’invio dell’email:", e)
 
-@app.route("/reset-password", methods=["GET", "POST"])
+@app.route("/reset_password", methods=["GET", "POST"])
 def reset_password():
     if request.method == "POST":
         email = request.form["email"]
