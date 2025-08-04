@@ -142,7 +142,7 @@ def aggiungi():
     if "user_id" not in session:
         return "", 401
     squadra = request.json.get("squadra", [])
-    if 3 <= len(squadra) <= 5:
+    if 2 <= len(squadra) <= 5:
         nuova = Team(giocatori=json.dumps(squadra), data=oggi(), user_id=session["user_id"])
         db.session.add(nuova)
         db.session.commit()

@@ -59,7 +59,7 @@ document.querySelector(".btn-aggiungi").addEventListener("click", () => {
   const erroreDiv = document.getElementById("errore");
   const giocatori = input.value.split(",").map(g => g.trim()).filter(g => g);
 
-  if (giocatori.length < 3 || giocatori.length > 5) {
+  if (giocatori.length < 2 || giocatori.length > 5) {
     erroreDiv.textContent = "⚠️ Una squadra deve avere da 3 a 5 giocatori.";
     return;
   }
