@@ -11,3 +11,7 @@ with app.app_context():
     
     db.create_all()
     print("Tabelle rigenerate.")
+
+
+# python reset_db.py
+# gunicorn app:app
