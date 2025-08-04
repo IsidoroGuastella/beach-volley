@@ -1,3 +1,5 @@
+
+# LIBRERIE NECESSARIE
 from flask import Flask, render_template, request, redirect, session, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -16,27 +18,26 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 # MODELLI
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
+class User(db.Model):  # Crea la tabella user
+    id = db.Column(db.Integer, primary_key=True) # Chiave primaria id
+    username = db.Column(db.String(80), unique=True, nullable=False) 
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(512), nullable=False)
-    is_verified = db.Column(db.Boolean, default=False)
-    teams = db.relationship("Team", backref="owner", lazy=True)
-
-class Team(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    giocatori = db.Column(db.Text, nullable=False)
-    data = db.Column(db.Date, default=date.today, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    password_hash = db.Column(db.String(512), nullable=False) # Viene salvata la password hashata
+    is_verified = db.Column(db.Boolean, default=False) # Un flag pe verificare che l'utente sia verificato o meno
+    teams = db.relationship("Team", backref="owner", lazy=True) # La chiave esterna
+class Team(db.Model): # Crea la tabella team
+    id = db.Column(db.Integer, primary_key=True) # Chiave primaria id
+    giocatori = db.Column(db.Text, nullable=False) # Lista dei giocatori della squadra
+    data = db.Column(db.Date, default=date.today, nullable=False) 
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False) # Chiave esterna associata 
 
 # UTILS
 def oggi():
     return date.today()
 
 # ROTTE UTENTE
-@app.route("/register", methods=["GET", "POST"])
-def register():
+@app.route("/register", methods=["GET", "POST"]) # Rotta per effettuare il SIGNUP
+def register(): 
     if request.method == "POST":
         username = request.form["username"]
         email = request.form["email"]
@@ -61,7 +62,7 @@ def register():
 
     return render_template("register.html")
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/login", methods=["GET", "POST"]) # Rotta per effettuare il LOGIN
 def login():
     errore = None
     if request.method == "POST":
@@ -79,13 +80,13 @@ def login():
 
     return render_template("login.html", errore=errore)
 
-@app.route("/logout")
+@app.route("/logout") # Rotta per il LOGOUT
 def logout():
     session.clear()
     return redirect("/login")
 
 # HOME E GESTIONE PRENOTAZIONI
-@app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET", "POST"]) # Rotta per la schermata personale con le prenotazioni delle partite
 def index():
     if "user_id" not in session:
         return redirect("/login")
@@ -103,7 +104,7 @@ def index():
 
     return render_template("index.html", prenotazioni=[json.loads(t.giocatori) for t in teams])
 
-@app.route("/rimuovi", methods=["POST"])
+@app.route("/rimuovi", methods=["POST"]) # Rotta per rimuovere una sqaudra inserita
 def rimuovi():
     if "user_id" not in session:
         return "", 401
@@ -114,7 +115,7 @@ def rimuovi():
         db.session.commit()
     return "", 204
 
-@app.route("/duplica", methods=["POST"])
+@app.route("/duplica", methods=["POST"]) # Rotta per diplicare in fondo alla lista una sqaudra inserita
 def duplica():
     if "user_id" not in session:
         return "", 401
@@ -127,7 +128,7 @@ def duplica():
         db.session.commit()
     return "", 204
 
-@app.route("/dati")
+@app.route("/dati") # Rotta per la visualizzazione delle partite registrate dal dato user
 def dati():
     if "user_id" not in session:
         return jsonify([])
@@ -137,7 +138,7 @@ def dati():
         "prenotazioni": [json.loads(t.giocatori) for t in teams]
     })
 
-@app.route("/aggiungi", methods=["POST"])
+@app.route("/aggiungi", methods=["POST"]) # Rotta per aggiungere una squadra
 def aggiungi():
     if "user_id" not in session:
         return "", 401
@@ -148,8 +149,8 @@ def aggiungi():
         db.session.commit()
     return "", 204
 
-@app.route("/verifica/<token>")
-def verifica_email(token):
+@app.route("/verifica/<token>") # Rotta per la verifica della mail in fare di registrazione
+def verifica_email(token): 
     email = verifica_token(token)
     if not email:
         return "Token non valido o scaduto.", 400
@@ -173,7 +174,7 @@ app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
 app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_USERNAME")
 
 
-def invia_email_verifica(destinatario, link_verifica):
+def invia_email_verifica(destinatario, link_verifica): # Funzione per inviare il messaggio con il link per confermare e terminare la registrazione
     mittente = os.environ.get("MAIL_USERNAME")
     password = os.environ.get("MAIL_PASSWORD")
     server_smtp = "smtp.gmail.com"
@@ -204,7 +205,7 @@ Se non hai richiesto questa registrazione, puoi ignorare questa email.
     except Exception as e:
         print("Errore durante l’invio dell’email:", e)
 
-@app.route("/reset_password", methods=["GET", "POST"])
+@app.route("/reset_password", methods=["GET", "POST"]) # Rotta per ripristinare la password
 def reset_password():
     if request.method == "POST":
         email = request.form["email"]
@@ -219,7 +220,7 @@ def reset_password():
 
     return render_template("reset_password.html")
 
-def invia_email_reset(destinatario, link_reset):
+def invia_email_reset(destinatario, link_reset): # Funzione per inviare il messaggio con il link per il ripristino della password
     mittente = os.environ.get("MAIL_USERNAME")
     password = os.environ.get("MAIL_PASSWORD")
     server_smtp = os.environ.get("EMAIL_SMTP", "smtp.gmail.com")
@@ -248,8 +249,8 @@ Questo link scade tra 1 ora. Se non hai richiesto tu questa operazione, puoi ign
     except Exception as e:
         print("Errore durante l’invio dell’email di reset:", e)
 
-@app.route("/nuova-password/<token>", methods=["GET", "POST"])
-def nuova_password(token):
+@app.route("/nuova-password/<token>", methods=["GET", "POST"]) # Rotta per l'inserimento di una nuova password
+def nuova_password(token): 
     email = verifica_token(token)
     if not email:
         return "Il link non è valido o è scaduto.", 400
