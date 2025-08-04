@@ -152,6 +152,12 @@ a:hover {
     width: 100%;
     padding: 30px 10px;
   }
+  
+  .contenitore-box {
+    width: 100%;
+    padding: 20px 10px;
+    box-sizing: border-box;
+  }
 
   .box {
     padding: 20px;

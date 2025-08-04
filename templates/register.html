@@ -1,36 +1,60 @@
 <!DOCTYPE html>
 <html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <title>Sign up</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='stylepagine.css') }}">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon-192.png') }}">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Beach Volley">
-</head>
-<body>
-    <div class="colonna laterale"></div>
-    <div class="colonna centrale">
-        <div class="contenitore-box">
-            <div class="titolo-pagina">Registrazione</div>
-            <div class="box">
-                <form method="POST">
-                    <label for="username">Nome utente</label>
-                    <input type="text" name="username" placeholder="Es. Mario Rossi" required>
+    <head>
+        <meta charset="UTF-8">
+        <title>Sign up</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='stylepagine.css') }}">
+        <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+        <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon-192.png') }}">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-title" content="Beach Volley">
+    </head>
+    <body>
+        <div class="colonna laterale"></div>
+        <div class="colonna centrale">
+            <div class="contenitore-box">
+                <div class="titolo-pagina">Registrazione</div>
+                <div class="box">
+                    <form method="POST">
+                        <label for="username">Nome utente</label>
+                        <input type="text" name="username" placeholder="Es. Mario Rossi" required>
 
-                    <label for="email">Email</label>
-                    <input type="email" name="email" required>
+                        <label for="email">Email</label>
+                        <input type="email" name="email" required>
 
-                    <label for="password">Password</label>
-                    <input type="password" name="password" required>
+                        <label for="password">Password</label>
+                        <div class="campo-password">
+                                <input type="password" id="password" name="password" required>
+                                <img src="{{ url_for('static', filename='img1.png') }}"  
+                                id="togglePassword" class="toggle-password" alt="Mostra password"
+                                data-img-on="{{ url_for('static', filename='img0.png') }}" 
+                                data-img-off="{{ url_for('static', filename='img1.png') }}">
+                            </div>
 
-                    <button type="submit">SIGN UP</button>
-                </form>
-                <p>Hai già un account? <a href="/login">Accedi</a></p>
+                        <button type="submit">SIGN UP</button>
+                    </form>
+                    {% if errore %}
+                        <p class="errore">{{ errore }}</p>
+                    {% endif %}
+                    <p>Hai già un account? <a href="/login">Accedi</a></p>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="colonna laterale"></div>
-</body>
+        <div class="colonna laterale"></div>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const passwordField = document.getElementById("password");
+                const toggleIcon = document.getElementById("togglePassword");
+
+                toggleIcon.addEventListener("click", () => {
+                    const imgOn = toggleIcon.getAttribute("data-img-on");
+                    const imgOff = toggleIcon.getAttribute("data-img-off");
+
+                    const isHidden = passwordField.type === "password";
+                    passwordField.type = isHidden ? "text" : "password";
+                    toggleIcon.src = isHidden ? imgOn : imgOff;
+                });
+            });
+        </script>
+    </body>
 </html>
